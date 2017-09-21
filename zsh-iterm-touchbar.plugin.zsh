@@ -102,10 +102,9 @@ function _displayDefault() {
 
   touchBarState=''
 
-  # CURRENT_DIR
-  # -----------
-  pecho "\033]1337;SetKeyLabel=F1=👉 $(echo $(pwd) | awk -F/ '{print $(NF-1)"/"$(NF)}')\a"
-  bindkey -s '^[OP' 'pwd \n'
+  # Current directory
+  # pecho "\033]1337;SetKeyLabel=F1=👉 $(echo $(pwd) | awk -F/ '{print $(NF-1)"/"$(NF)}')\a"
+  # bindkey -s '^[OP' 'pwd \n'
 
   # GIT
   # ---
@@ -120,30 +119,39 @@ function _displayDefault() {
 
     # String of indicators
     local indicators=''
-
     indicators+="$(git_uncomitted)"
     indicators+="$(git_unstaged)"
     indicators+="$(git_untracked)"
     indicators+="$(git_stashed)"
     indicators+="$(git_unpushed_unpulled)"
-
     [ -n "${indicators}" ] && touchbarIndicators="🔥[${indicators}]" || touchbarIndicators="🙌";
 
-    pecho "\033]1337;SetKeyLabel=F2=🎋 $(git_current_branch)\a"
-    pecho "\033]1337;SetKeyLabel=F3=$touchbarIndicators\a"
-    pecho "\033]1337;SetKeyLabel=F4=✉️ push\a";
+    # Git branch
+    # pecho "\033]1337;SetKeyLabel=F2=🎋 $(git_current_branch)\a"
+    # bindkey -s '^[OQ' 'git branch -a \n'
 
-    # bind git actions
-    bindkey -s '^[OQ' 'git branch -a \n'
-    bindkey -s '^[OR' 'git status \n'
-    bindkey -s '^[OS' "git push origin $(git_current_branch) \n"
-  fi
+    # Git status
+    # pecho "\033]1337;SetKeyLabel=F3=$touchbarIndicators\a"
+    # bindkey -s '^[OR' 'git status \n'
 
-  # PACKAGE.JSON
-  # ------------
-  if [[ -f package.json ]]; then
-    pecho "\033]1337;SetKeyLabel=F5=⚡️ npm-run\a"
-    bindkey "${fnKeys[5]}" _displayNpmScripts
+    # # Git push
+    # pecho "\033]1337;SetKeyLabel=F4=✉️push\a"
+    # bindkey -s '^[OS' "git push origin $(git_current_branch) \n"
+
+    # Git Stash all
+    pecho "\033]1337;SetKeyLabel=F1=❌stash\a"
+    bindkey -s '^[OP' "git add -A; git stash \n"
+
+    # Git Stash apply
+    pecho "\033]1337;SetKeyLabel=F2=✅unstash\a"
+    bindkey -s '^[OQ' "git stash apply \n"
+
+
+    # Finish buttons
+    pecho "\033]1337;SetKeyLabel=F3=                                                \
+                                                                                    \
+                                                                                                             \a";
+
   fi
 }
 
