@@ -80,8 +80,20 @@ pecho() {
   fi
 }
 
-# F1-12: https://github.com/vmalloc/zsh-config/blob/master/extras/function_keys.zsh
-fnKeys=('^[OP' '^[OQ' '^[OR' '^[OS' '^[[15~' '^[[17~' '^[[18~' '^[[19~' '^[[20~' '^[[21~' '^[[23~' '^[[24~')
+typeset -A buttons
+buttons[F1]='^[OP'
+buttons[F2]='^[OQ'
+buttons[F3]='^[OR'
+buttons[F4]='^[OS'
+buttons[F5]='^[[15~'
+buttons[F6]='^[[17~'
+buttons[F7]='^[[18~' 
+buttons[F8]='^[[19~'
+buttons[F9]='^[[20~'
+buttons[F10]='^[[21~'
+buttons[F11]='^[[23~'
+buttons[F12]='^[[24~'
+
 touchBarState=''
 npmScripts=()
 lastPackageJsonPath=''
@@ -91,9 +103,14 @@ function _clearTouchbar() {
 }
 
 function _unbindTouchbar() {
-  for fnKey in "$fnKeys[@]"; do
-    bindkey -s "$fnKey" ''
+  for fnKey in "${(@k)buttons}"; do
+    bindkey -s "$buttons[$fnKey]" ''
   done
+}
+
+function _setButton() {
+  pecho "\033]1337;SetKeyLabel=$1=$2\a"
+  bindkey -s "$buttons[$1]" "$3 \n"
 }
 
 function _displayDefault() {
@@ -102,15 +119,8 @@ function _displayDefault() {
 
   touchBarState=''
 
-  # Current directory
-  # pecho "\033]1337;SetKeyLabel=F1=👉 $(echo $(pwd) | awk -F/ '{print $(NF-1)"/"$(NF)}')\a"
-  # bindkey -s '^[OP' 'pwd \n'
-
-  # GIT
-  # ---
   # Check if the current directory is in a Git repository.
   command git rev-parse --is-inside-work-tree &>/dev/null || return
-
   # Check if the current directory is in .git before running git checks.
   if [[ "$(git rev-parse --is-inside-git-dir 2> /dev/null)" == 'false' ]]; then
 
@@ -126,31 +136,11 @@ function _displayDefault() {
     indicators+="$(git_unpushed_unpulled)"
     [ -n "${indicators}" ] && touchbarIndicators="🔥[${indicators}]" || touchbarIndicators="🙌";
 
-    # Git branch
-    # pecho "\033]1337;SetKeyLabel=F2=🎋 $(git_current_branch)\a"
-    # bindkey -s '^[OQ' 'git branch -a \n'
-
-    # Git status
-    # pecho "\033]1337;SetKeyLabel=F3=$touchbarIndicators\a"
-    # bindkey -s '^[OR' 'git status \n'
-
-    # # Git push
-    # pecho "\033]1337;SetKeyLabel=F4=✉️push\a"
-    # bindkey -s '^[OS' "git push origin $(git_current_branch) \n"
-
-    # Git Stash all
-    pecho "\033]1337;SetKeyLabel=F1=❌stash\a"
-    bindkey -s '^[OP' "git add -A; git stash \n"
-
-    # Git Stash apply
-    pecho "\033]1337;SetKeyLabel=F2=✅unstash\a"
-    bindkey -s '^[OQ' "git stash apply \n"
-
-
-    # Finish buttons
-    pecho "\033]1337;SetKeyLabel=F3=                                                \
-                                                                                    \
-                                                                                                             \a";
+    # _setButton "F1" "👉 $(echo $(pwd) | awk -F/ '{print $(NF-1)"/"$(NF)}')" "pwd"
+    _setButton "F1" "$touchbarIndicators" "git status"
+    _setButton "F2" "❌stash" "git add -A; git stash"
+    _setButton "F3" "✅unstash" "git stash apply"
+    _setButton "F4" "${(r:200:: :)}"
 
   fi
 }
