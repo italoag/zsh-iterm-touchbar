@@ -132,7 +132,7 @@ function _displayDefault() {
     indicators+="$(git_uncomitted)"
     indicators+="$(git_unstaged)"
     indicators+="$(git_untracked)"
-    indicators+="$(git_stashed)"
+    # indicators+="$(git_stashed)"
     indicators+="$(git_unpushed_unpulled)"
     [ -n "${indicators}" ] && touchbarIndicators="🔥[${indicators}]" || touchbarIndicators="🙌";
 
