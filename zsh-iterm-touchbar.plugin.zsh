@@ -1,10 +1,10 @@
 # GIT
-GIT_UNCOMMITTED="${GIT_UNCOMMITTED:-+}"
-GIT_UNSTAGED="${GIT_UNSTAGED:-!}"
+GIT_UNCOMMITTED="${GIT_UNCOMMITTED:-☢}"
+GIT_UNSTAGED="${GIT_UNSTAGED:-🚧}"
 GIT_UNTRACKED="${GIT_UNTRACKED:-?}"
 GIT_STASHED="${GIT_STASHED:-$}"
-GIT_UNPULLED="${GIT_UNPULLED:-⇣}"
-GIT_UNPUSHED="${GIT_UNPUSHED:-⇡}"
+GIT_UNPULLED="${GIT_UNPULLED:-⬇}"
+GIT_UNPUSHED="${GIT_UNPUSHED:-⬆}"
 
 # Output name of current branch.
 git_current_branch() {
@@ -113,6 +113,17 @@ function _setButton() {
   bindkey -s "$buttons[$1]" "$3 \n"
 }
 
+function git_merge_master() {
+  branchName=`git branch | grep \* | cut -d ' ' -f2`
+  git add -A
+  git stash
+  git checkout master
+  git pull
+  git checkout $branchName
+  git merge master
+  git stash pop
+}
+
 function _displayDefault() {
   _clearTouchbar
   _unbindTouchbar
@@ -134,13 +145,14 @@ function _displayDefault() {
     indicators+="$(git_untracked)"
     # indicators+="$(git_stashed)"
     indicators+="$(git_unpushed_unpulled)"
-    [ -n "${indicators}" ] && touchbarIndicators="🔥[${indicators}]" || touchbarIndicators="🙌";
+    [ -n "${indicators}" ] && touchbarIndicators="${indicators}" || touchbarIndicators="🙌";
 
     # _setButton "F1" "👉 $(echo $(pwd) | awk -F/ '{print $(NF-1)"/"$(NF)}')" "pwd"
     _setButton "F1" "$touchbarIndicators" "git status"
-    _setButton "F2" "❌stash" "git add -A; git stash"
-    _setButton "F3" "✅unstash" "git stash apply"
-    _setButton "F4" "${(r:200:: :)}"
+    _setButton "F2" "❌ stash" "git add -A; git stash"
+    _setButton "F3" "✅ unstash" "git stash pop"
+    _setButton "F4" "☮ master" "git_merge_master"
+    _setButton "F5" "${(r:200:: :)}"
 
   fi
 }
