@@ -115,13 +115,19 @@ function _setButton() {
 
 function git_merge_master() {
   branchName=`git branch | grep \* | cut -d ' ' -f2`
-  git add -A &&
-  git stash &&
+  changesToStash=`git diff-index --quiet HEAD; echo $?`
+  if [[ -n ${changesToStash} ]]; then
+    git add -A && git stash
+  fi
+
   git checkout master &&
   git pull &&
   git checkout $branchName &&
-  git merge master &&
-  git stash pop
+  git merge master
+
+  if [[ -n ${changesToStash} ]]; then
+    git stash pop
+  fi
 }
 
 function git_stash() {
