@@ -115,8 +115,9 @@ function _setButton() {
 
 function git_merge_master() {
   branchName=`git branch | grep \* | cut -d ' ' -f2`
-  changesToStash=`git diff-index --quiet HEAD; echo $?`
-  if [[ -n ${changesToStash} ]]; then
+  [[ -z $(git status --porcelain) ]]
+  changesToStash=$?
+  if [[ $changesToStash == 1 ]]; then
     git add -A && git stash
   fi
 
@@ -125,7 +126,7 @@ function git_merge_master() {
   git checkout $branchName &&
   git merge master
 
-  if [[ -n ${changesToStash} ]]; then
+  if [[ $changesToStash == 1 ]]; then
     git stash pop
   fi
 }
