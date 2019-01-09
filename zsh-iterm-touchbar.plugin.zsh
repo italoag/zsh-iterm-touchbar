@@ -115,13 +115,32 @@ function _setButton() {
 
 function git_merge_master() {
   branchName=`git branch | grep \* | cut -d ' ' -f2`
-  git add -A
-  git stash
-  git checkout master
-  git pull
-  git checkout $branchName
+  [[ -z $(git status --porcelain) ]]
+  changesToStash=$?
+  if [[ $changesToStash == 1 ]]; then
+    git add -A && git stash
+  fi
+
+  git checkout master &&
+  git pull &&
+  git checkout $branchName &&
   git merge master
+
+  if [[ $changesToStash == 1 ]]; then
+    git stash pop
+  fi
+}
+
+function git_stash() {
+  git add -A && git stash
+}
+
+function git_unstash() {
   git stash pop
+}
+
+function git_shelve_commit() {
+  git commit -a -n -m 'TEMP COMMIT'
 }
 
 function _displayDefault() {
@@ -149,10 +168,11 @@ function _displayDefault() {
 
     # _setButton "F1" "👉 $(echo $(pwd) | awk -F/ '{print $(NF-1)"/"$(NF)}')" "pwd"
     _setButton "F1" "$touchbarIndicators" "git status"
-    _setButton "F2" "❌ stash" "git add -A; git stash"
-    _setButton "F3" "✅ unstash" "git stash pop"
+    _setButton "F2" "❌ stash" "git_stash"
+    _setButton "F3" "✅ unstash" "git_unstash"
     _setButton "F4" "☮ master" "git_merge_master"
-    _setButton "F5" "${(r:200:: :)}"
+    _setButton "F5" "💼 shelf" "git_shelve_commit"
+    _setButton "F6" "${(r:200:: :)}"
 
   fi
 }
