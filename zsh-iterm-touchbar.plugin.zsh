@@ -124,7 +124,7 @@ function git_merge_master() {
   git checkout master &&
   git pull &&
   git checkout $branchName &&
-  git merge master
+  git merge master --no-edit
 
   if [[ $changesToStash == 1 ]]; then
     git stash pop
