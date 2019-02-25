@@ -127,7 +127,7 @@ function git_merge_master() {
   git merge master --no-edit
 
   if [[ $changesToStash == 1 ]]; then
-    git stash pop
+    git stash apply || git stash drop
   fi
 }
 
@@ -136,7 +136,7 @@ function git_stash() {
 }
 
 function git_unstash() {
-  git stash pop
+  git stash apply || git stash drop
 }
 
 function git_shelve_commit() {
