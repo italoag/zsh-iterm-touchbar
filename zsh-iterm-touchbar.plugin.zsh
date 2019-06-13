@@ -140,7 +140,27 @@ function git_unstash() {
 }
 
 function git_shelve_commit() {
+  git add -A
   git commit -a -n -m 'TEMP COMMIT'
+}
+
+function git_new_branch() {
+  echo -n "Enter branch name: "
+  read branchName
+
+  [[ -z $(git status --porcelain) ]]
+  changesToStash=$?
+  if [[ $changesToStash == 1 ]]; then
+    git add -A && git stash
+  fi
+
+  git checkout master &&
+  git pull &&
+  git checkout -b ${branchName}
+
+  if [[ $changesToStash == 1 ]]; then
+    git stash apply || git stash drop
+  fi
 }
 
 function _displayDefault() {
@@ -171,8 +191,9 @@ function _displayDefault() {
     _setButton "F2" "❌ stash" "git_stash"
     _setButton "F3" "✅ unstash" "git_unstash"
     _setButton "F4" "☮ master" "git_merge_master"
-    _setButton "F5" "💼 shelf" "git_shelve_commit"
-    _setButton "F6" "${(r:200:: :)}"
+    _setButton "F5" "🌱 new branch" "git_new_branch"
+    _setButton "F6" "💼 shelf" "git_shelve_commit"
+    _setButton "F7" "${(r:200:: :)}"
 
   fi
 }
