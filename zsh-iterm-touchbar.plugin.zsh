@@ -124,10 +124,10 @@ function git_merge_master() {
   git checkout master &&
   git pull &&
   git checkout $branchName &&
-  git merge master
+  git merge master --no-edit
 
   if [[ $changesToStash == 1 ]]; then
-    git stash pop
+    git stash apply && git stash drop
   fi
 }
 
@@ -136,11 +136,44 @@ function git_stash() {
 }
 
 function git_unstash() {
-  git stash pop
+  git stash apply && git stash drop
 }
 
 function git_shelve_commit() {
+  git add -A
   git commit -a -n -m 'TEMP COMMIT'
+}
+
+function git_reset_staging() {
+  branchName=`git branch | grep \* | cut -d ' ' -f2`
+  git push &&
+  git checkout master &&
+  git pull &&
+  git branch -D staging &&
+  git checkout -b staging &&
+  git merge $branchName --squash &&
+  git commit --no-edit &&
+  git push --set-upstream origin staging --force &&
+  git checkout $branchName
+}
+
+function git_new_branch() {
+  echo -n "Enter branch name: "
+  read branchName
+
+  [[ -z $(git status --porcelain) ]]
+  changesToStash=$?
+  if [[ $changesToStash == 1 ]]; then
+    git add -A && git stash
+  fi
+
+  git checkout master &&
+  git pull &&
+  git checkout -b ${branchName}
+
+  if [[ $changesToStash == 1 ]]; then
+    git stash apply || git stash drop
+  fi
 }
 
 function _displayDefault() {
@@ -170,9 +203,10 @@ function _displayDefault() {
     _setButton "F1" "$touchbarIndicators" "git status"
     _setButton "F2" "❌ stash" "git_stash"
     _setButton "F3" "✅ unstash" "git_unstash"
-    _setButton "F4" "☮ master" "git_merge_master"
-    _setButton "F5" "💼 shelf" "git_shelve_commit"
-    _setButton "F6" "${(r:200:: :)}"
+    _setButton "F4" "☮️ master" "git_merge_master"
+    _setButton "F5" "🌱 new branch" "git_new_branch"
+    _setButton "F6" "☢️ staging" "git_reset_staging"
+    _setButton "F7" "${(r:200:: :)}"
 
   fi
 }
