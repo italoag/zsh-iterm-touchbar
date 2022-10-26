@@ -113,6 +113,10 @@ function _setButton() {
   bindkey -s "$buttons[$1]" "$3 \n"
 }
 
+function git_default_branch() {
+  echo `git branch -rl '*/HEAD' | awk -F/ '{print $NF}'`
+}
+
 function git_merge_master() {
   branchName=`git branch | grep \* | cut -d ' ' -f2`
   [[ -z $(git status --porcelain) ]]
@@ -121,10 +125,10 @@ function git_merge_master() {
     git add -A && git stash
   fi
 
-  git checkout master &&
+  git checkout $(git_default_branch) &&
   git pull &&
   git checkout $branchName &&
-  git merge master --no-edit
+  git merge $(git_default_branch) --no-edit
 
   if [[ $changesToStash == 1 ]]; then
     git stash apply && git stash drop
@@ -147,7 +151,7 @@ function git_shelve_commit() {
 function git_reset_staging() {
   branchName=`git branch | grep \* | cut -d ' ' -f2`
   git push &&
-  git checkout master &&
+  git checkout $(git_default_branch) &&
   git pull &&
   git branch -D staging &&
   git checkout -b staging &&
@@ -167,7 +171,7 @@ function git_new_branch() {
     git add -A && git stash
   fi
 
-  git checkout master &&
+  git checkout $(git_default_branch) &&
   git pull &&
   git checkout -b ${branchName}
 
